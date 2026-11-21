@@ -1,0 +1,186 @@
+SAEP | ALMOXARIFADO | ROTEIRO DE BANCADA
+
+FLUXO RÁPIDO
+Leia a prova → abra a branch → suba o banco e o projeto → confira os
+dois papéis → implemente filtros e valide estoque → execute os três
+cenários → anexe evidências e resultados → push e pull request.
+
+Use o enunciado recebido no dia para decidir nomes, permissões, formatos
+e o que pode ser reaproveitado. Este roteiro usa o PDF de treino como base.
+Separe cerca de 20% do tempo para testes, documentação e entrega.
+
+1. ANTES DA PROVA
+- Importe este projeto como Maven. Ele foi preparado a partir da branch
+  de estudo gabriel-vanderlinde-1 e inclui as adaptações do PDF de treino.
+- Rode a aplicação de treino no mesmo tipo de ambiente da prova. Confira
+  java -version e mvn -v. Use o JDK 21 da referência e confira o JDK que
+  a IDE usa para importar o Maven. O pom da referência declara Boot 4.0.7.
+- Se o navegador estiver offline, confira os botões e as ações sem o
+  CDN do Lucide. Onde houver chamada direta, use window.lucide?.createIcons()
+  e mantenha rótulos visíveis para as ações essenciais.
+- Com internet, rode mvn -DskipTests package para baixar as dependências.
+  Depois tente mvn -o -DskipTests package para testar o cache local.
+  O projeto leva o código e o wrapper. O Maven e o banco precisam estar
+  disponíveis na máquina da prova. O cache pertence à máquina do ensaio.
+- Abra os dois DOCX no editor que usará. Ensaie os três casos e a captura
+  de tela. Leve o roteiro, o PDF e os modelos junto da referência.
+
+2. COMEÇO DA PROVA E GIT
+- Leia as entregas e marque as diferenças em relação ao treino.
+- Clone ou abra o repositório indicado pela professora. No terminal:
+
+  git status --short --branch
+  git remote -v
+  git remote show origin
+  git switch main
+  git pull --ff-only
+  git switch -c gabriel-vanderlinde
+
+  Use o nome real da branch principal e o padrão de nome exigido.
+  Se começar num repositório com código, compare os arquivos e incorpore
+  as adaptações por camada. Se estiver vazio e for permitido reaproveitar
+  a referência, copie pom.xml, mvnw, mvnw.cmd, .mvn/, src/ e os documentos
+  relevantes. Mantenha o .git do repositório oficial. Exclua do staging
+  target/, .idea/, senhas reais e o ZIP de consulta.
+
+3. BANCO E PRIMEIRA EXECUÇÃO
+- Inicie o servidor MySQL indicado. No XAMPP, use o módulo MySQL.
+  O Workbench é o cliente. Abra a conexão com o host, porta e credenciais
+  da máquina, e execute docs/db/schema.sql no banco de ensaio ou da prova.
+  Confira SELECT DATABASE(); e SHOW TABLES;. As tabelas esperadas são
+  usuario, produto e movimentacao_estoque.
+- Em src/main/resources/application.yaml, alinhe spring.datasource.url,
+  username e password com o banco. A referência usa localhost:3306/saep_db.
+  Se usar variáveis de ambiente, Spring aceita SPRING_DATASOURCE_URL,
+  SPRING_DATASOURCE_USERNAME e SPRING_DATASOURCE_PASSWORD.
+- Rode mvn spring-boot:run, ou ./mvnw spring-boot:run em Linux/macOS,
+  ou .\mvnw.cmd spring-boot:run no PowerShell. Abra localhost:8080/login.
+- Teste com giovanni / gio123 (administrador) e maria / maria123
+  (operadora) no banco de treino. SetupInicial cria esses usuários
+  com BCrypt se o login ainda estiver livre. Confira a configuração
+  de demonstração que o enunciado pedir na entrega.
+- Em acesso negado do MySQL, confira host, porta, usuário e senha.
+  Em connection refused, confirme que o servidor iniciou.
+  Em Unknown database, crie o schema. Se 8080 estiver ocupada, ajuste
+  server.port ou SERVER_PORT e abra o navegador na porta escolhida.
+- Se precisa do DER, no Workbench use Database > Reverse Engineer,
+  selecione o schema e confira as FKs de movimentação para usuário e produto.
+  Exporte o diagrama e atualize docs/db/der.png se o modelo mudou.
+
+4. ONDE MEXER
+O código fica em src/main/java/com/senai/sistema_almoxarifado.
+As páginas ficam em src/main/resources/templates.
+
+- entity modela as tabelas, repository consulta o banco, dto representa
+  entrada e saída, service aplica regras, controller trata HTTP e
+  templates renderiza as telas. config trata segurança e bootstrap.
+- Documente o fluxo em docs/arquitetura.md com os nomes reais das classes.
+  Exemplo de saída: formulário → MovimentacaoController →
+  MovimentacaoEstoqueService → repositórios → atualização e histórico.
+- Adapte marca e rótulos pelo enunciado. Procure FerraSul, ferramenta e
+  ferramentas nos templates. Mantenha nomes técnicos coerentes com o código.
+
+5. USUÁRIOS E PERMISSÕES
+- SegurancaConfig controla as rotas no servidor. USER e ADMIN podem
+  abrir e enviar cadastro e edição de produto, listar e movimentar.
+  DELETE /produtoexcluir/{id} é ADMIN. Preserve CSRF nos formulários e
+  no JavaScript que envia DELETE.
+- Confira os links de cadastrar e editar como operador. Em home.html e
+  produtolista.html, preserve as condições de administrador nos controles
+  exclusivos.
+- O cadastro de usuários neste projeto é privativo de ADMIN, via
+  /usuarios/cadastrar. Se o enunciado pedir autocadastro, adapte o fluxo
+  e atribua ROLE_USER no servidor. Preserve BCrypt e unicidade do login.
+- Exiba o tipo autenticado no cabeçalho. Teste em janelas distintas:
+  visitante redirecionado para login, operadora cadastra/edita/movimenta,
+  exclusão proibida para ela no servidor, administrador exclui um produto
+  descartável sem histórico, e um usuário recém-cadastrado consegue entrar.
+
+6. PAGINAÇÃO E FILTRO
+- ProdutoPageController atende GET /produtolista. ProdutoService cria a
+  página, ProdutoRepository consulta e produtolista.html usa pagina.content.
+  O formulário inclui os filtros opcionais por data e nome. Ajuste a
+  lógica caso o enunciado use um campo de data diferente.
+- Use dataCadastro se o enunciado não apontar outro campo. Confira se novos
+  produtos recebem a data ao cadastrar via @CreationTimestamp. Registros antigos com data nula
+  aparecem na listagem geral, mas ficam fora de intervalos definidos.
+- Receba dataInicio e dataFim como LocalDate ISO ou faça o parse com
+  LocalDate.parse. Capture data inválida e intervalo invertido com mensagem.
+  Converta início em inicio.atStartOfDay(). Converta a data final em
+  fim.plusDays(1).atStartOfDay() e compare com <. Isso inclui todo o
+  último dia do intervalo. Aceite limites isolados na consulta.
+- Use uma consulta paginada com filtros opcionais combinados por AND.
+  Na JPQL, a lógica dos predicados é:
+
+  (:nome IS NULL OR LOWER(p.nome) LIKE LOWER(CONCAT('%', :nome, '%')))
+  AND (:inicio IS NULL OR p.dataCadastro >= :inicio)
+  AND (:fimExclusivo IS NULL OR p.dataCadastro < :fimExclusivo)
+
+  Normalize termo em branco para null no serviço. Retorne Page e use
+  PageRequest com ordem estável, por exemplo por id. Confira página >= 0
+  e tamanho positivo. Preserve termo, dataInicio, dataFim e tamanho nos
+  links Anterior/Próxima. O envio do formulário deve voltar à página 0.
+- Cadastre produtos com nomes e datas distintos no banco de treino.
+  Confira nome sozinho, cada limite isolado, as duas datas, nome e data
+  juntos, lista sem resultados, troca de página e a limpeza do filtro.
+  Use tamanho=2 para verificar a navegação com poucos registros.
+
+7. MOVIMENTAÇÃO E SALDO
+- Preserve a validação de quantidade positiva e obtenha o usuário
+  autenticado pelo principal. A data/hora deve vir do servidor.
+- Em MovimentacaoEstoqueService, dentro da transação, leia o saldo e bloqueie
+  quando solicitado > disponível. Para igualdade, grave saída e saldo zero.
+  Entrada soma; saída subtrai. Grave saldo e histórico na mesma transação.
+  Se houver submissões concorrentes, use o mesmo bloqueio de escrita do
+  produto para entrada e saída ao carregar o saldo, ou controle de versão.
+- EstoqueInsuficienteException leva os dois valores ao controller que
+  renderiza erroQuantidade. Confirme com saldo 10 e saída 11 que aparece:
+  Saída não permitida: estoque insuficiente. Disponível: 10. Solicitado: 11.
+- Confira em duas telas o saldo após a operação e, nas saídas aceitas,
+  a nova linha do histórico com quantidade, tipo, data/hora e responsável.
+  A tentativa recusada deve preservar o saldo e a contagem de movimentos.
+
+8. TESTES E DOCUMENTAÇÃO
+- Copie os dois DOCX para o projeto com os nomes e caminhos da prova.
+  No PDF de treino são docs/planotestes.docx e resultados.docx na raiz.
+  Crie docs/testes/ antes de capturar.
+- Use três produtos independentes, cada um com 10 unidades. Registre
+  a saída autenticado como operador. Use códigos exclusivos e verifique
+  a quantidade de movimentações anterior antes de cada tentativa.
+
+  Cenário 1 | saída 4 | aceita, saldo 6, uma nova saída auditada
+  Cenário 2 | saída 11 | bloqueada, saldo 10, histórico inalterado
+  Cenário 3 | saída 10 | aceita, saldo 0, uma nova saída auditada
+
+- Salve docs/testes/cenario1.png, cenario2.png e cenario3.png. Se uma
+  imagem não mostrar saldo e histórico, junte as duas vistas na mesma
+  captura composta ou use um log por cenário com as verificações.
+- Em resultados.docx descreva o que ocorreu e compare com o esperado.
+  Se falhar, registre a diferença, corrija e repita. No ensaio, teste
+  também entrada, quantidade zero, segurança e filtros.
+- Guarde o tempo final para mvn test, telas de aceite e PR. Um teste de
+  contexto pode depender do banco ligado e das credenciais configuradas.
+  Um build com -DskipTests verifica o empacotamento, e a execução dos
+  cenários fornece as evidências funcionais.
+
+9. ENTREGA
+- Sugestão de commits por etapa: configuração e arquitetura, segurança,
+  filtros e estoque, documentação e evidências.
+- Antes de cada commit use git status --short e git diff. Faça staging
+  apenas dos caminhos pretendidos e revise com git diff --cached --stat.
+- Faça push com git push -u origin gabriel-vanderlinde. Abra o PR no GitHub
+  da branch do aluno para a principal. A descrição pode listar mudanças,
+  os três testes e os caminhos de evidência. Confira base/compare e se
+  os arquivos finais aparecem em Files changed. Guarde o link do PR.
+
+CHECKLIST
+[ ] Branch e PR no repositório certo
+[ ] Banco e login sobem com a configuração do dia
+[ ] Cadastro de usuários e papéis verificados
+[ ] Operador cadastra e edita, administrador exclui
+[ ] Nome e data filtram juntos e persistem ao paginar
+[ ] Saída insuficiente exibe a mensagem com os dois valores
+[ ] Saída igual ao saldo zera o estoque
+[ ] Movimentações válidas exibem horário e usuário
+[ ] Arquitetura coerente com o código
+[ ] Plano e resultados em DOCX, três evidências no caminho pedido

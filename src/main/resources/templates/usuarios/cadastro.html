@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cadastrar usuário</title>
+</head>
+<body>
+<main>
+    <a th:href="@{/home}">Voltar ao início</a>
+    <h1>Cadastrar usuário</h1>
+    <p role="status" th:if="${sucesso}" th:text="${sucesso}"></p>
+    <form th:action="@{/usuarios/cadastrar}" th:object="${usuario}" method="post">
+        <ul role="alert" th:if="${#fields.hasAnyErrors()}">
+            <li th:each="erro : ${#fields.allErrors()}" th:text="${erro}"></li>
+        </ul>
+        <p><label>Nome <input th:field="*{nome}" required maxlength="50"></label></p>
+        <p><label>Login <input th:field="*{login}" required maxlength="45" autocomplete="off"></label></p>
+        <p><label>Senha <input name="senha" type="password" required minlength="8" maxlength="72" autocomplete="new-password"></label></p>
+        <p><label>Perfil
+            <select th:field="*{papel}" required>
+                <option value="ROLE_USER">Operador de Almoxarifado</option>
+                <option value="ROLE_ADMIN">Administrador do Sistema</option>
+            </select>
+        </label></p>
+        <button type="submit">Cadastrar</button>
+    </form>
+</main>
+</body>
+</html>
