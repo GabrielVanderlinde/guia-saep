@@ -49,12 +49,17 @@ Separe cerca de 20% do tempo para testes, documentação e entrega.
   da máquina, e execute docs/db/schema.sql no banco de ensaio ou da prova.
   Confira SELECT DATABASE(); e SHOW TABLES;. As tabelas esperadas são
   usuario, produto e movimentacao_estoque.
-- Em src/main/resources/application.yaml, alinhe spring.datasource.url,
-  username e password com o banco. A referência usa localhost:3306/saep_db.
-  Se usar variáveis de ambiente, Spring aceita SPRING_DATASOURCE_URL,
-  SPRING_DATASOURCE_USERNAME e SPRING_DATASOURCE_PASSWORD.
+- No Workbench execute SELECT VERSION();. Se aparecer MariaDB, configure
+  SPRING_PROFILES_ACTIVE=xampp nas variáveis de ambiente da execução.
+  Para MySQL, use a configuração padrão, sem ativar esse perfil.
+- Configure DB_USER e DB_PASSWORD com o mesmo usuário e senha da conexão
+  do Workbench. O exemplo de PowerShell está no README. Se a porta não
+  for 3306, configure DB_URL com a porta certa e o protocolo do servidor
+  (jdbc:mariadb:// ou jdbc:mysql://). A configuração padrão usa saep_db.
 - Rode mvn spring-boot:run, ou ./mvnw spring-boot:run em Linux/macOS,
-  ou .\mvnw.cmd spring-boot:run no PowerShell. Abra localhost:8080/login.
+  ou .\mvnw.cmd spring-boot:run no PowerShell. Com MariaDB, acrescente
+  -Pxampp antes do objetivo spring-boot:run para incluir o driver.
+  Baixe as dependências do perfil no ensaio. Abra localhost:8080/login.
 - Teste com giovanni / gio123 (administrador) e maria / maria123
   (operadora) no banco de treino. SetupInicial cria esses usuários
   com BCrypt se o login ainda estiver livre. Confira a configuração

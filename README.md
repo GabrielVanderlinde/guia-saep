@@ -5,10 +5,21 @@ Projeto de treino para a prova prática do SAEP. Inclui cadastro de usuários, a
 ## Executar
 
 1. Confira o Java 21 com `java -version`.
-2. Inicie o MySQL. Execute [docs/db/schema.sql](docs/db/schema.sql) em um banco de treino.
-3. Configure host, porta e credenciais em `src/main/resources/application.yaml` ou passe `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` e `SPRING_DATASOURCE_PASSWORD`.
-4. Rode `./mvnw spring-boot:run` no Linux/macOS ou `.\mvnw.cmd spring-boot:run` no Windows. Se já tiver Maven instalado, use `mvn spring-boot:run`.
+2. No XAMPP, inicie o módulo **MySQL**. No Workbench, conecte a `127.0.0.1` usando a porta exibida no painel e execute [docs/db/schema.sql](docs/db/schema.sql).
+3. Rode `SELECT VERSION();` no Workbench. Se a versão incluir **MariaDB**, ative o perfil `xampp`. Para um servidor MySQL, use a configuração padrão.
+4. Informe ao Spring o mesmo usuário e senha usados no Workbench. O exemplo usa PowerShell. Digite a senha no prompt para evitar deixá-la no histórico.
+
+   ```powershell
+   $env:DB_USER = 'root'
+   $env:DB_PASSWORD = Read-Host 'Senha do banco' -MaskInput
+   $env:SPRING_PROFILES_ACTIVE = 'xampp'
+   .\mvnw.cmd -Pxampp spring-boot:run
+   ```
+
+   Com MySQL, omita a linha de perfil em uma sessão nova e execute sem `-Pxampp`. O parâmetro `-Pxampp` inclui o driver JDBC MariaDB. No primeiro uso, execute o comando com acesso ao Maven Central. Se o banco usar outra porta, passe `DB_URL`, por exemplo `jdbc:mariadb://127.0.0.1:3307/saep_db`. Para MySQL, use `jdbc:mysql://` na URL. No IntelliJ, as mesmas variáveis podem ser configuradas em **Run > Edit Configurations > Environment variables**. Para MariaDB, ative também `xampp` em **Maven > Profiles**.
 5. Abra `http://localhost:8080/login`.
+
+As variáveis `DB_USER` e `DB_PASSWORD` seguem o [projeto de treino do Marlos](https://github.com/GabrielVanderlinde/prova-marlos/blob/HEAD/README_ALUNO.md). Em um XAMPP local com `root` e senha vazia, a configuração padrão já fornece esses valores. Em Windows PowerShell sem `Read-Host -MaskInput`, informe a senha pela configuração local da IDE.
 
 O banco de demonstração recebe os usuários `giovanni` / `gio123` (administrador) e `maria` / `maria123` (operadora). Use essas credenciais apenas no ensaio local. Após entrar como administrador, abra **Cadastrar usuário**.
 

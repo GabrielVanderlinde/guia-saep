@@ -2,14 +2,17 @@ spring:
   application:
     name: sistema-almoxarifado
   datasource:
-    url: jdbc:mysql://localhost:3306/saep_db
-    username: root
-    password:
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/saep_db}
+    username: ${DB_USER:root}
+    password: "${DB_PASSWORD:}"
   jpa:
-      hibernate:
-       ddl-auto: update
-      show-sql: true
-      properties:
-        hibernate:
-          format_sql: true
-          dialect: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: update
+
+---
+spring:
+  config:
+    activate:
+      on-profile: xampp
+  datasource:
+    url: ${DB_URL:jdbc:mariadb://127.0.0.1:3306/saep_db}
